@@ -34,7 +34,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-      - name: 🔐 Configure DVC Remote with Basic Auth (DagsHub)
+      - name: 🔐 Configure DVC Remote with Access Token (DagsHub)
         run: |
           dvc remote modify dagshub --local auth basic
           dvc remote modify dagshub --local user "${DAGSHUB_USERNAME}"
