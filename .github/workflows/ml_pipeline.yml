@@ -1,42 +1,41 @@
-name: Run ML Pipeline with DVC
+name: MLOps Pipeline CI/CD
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  run-pipeline:
+  run-ml-pipeline:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
-      - name: 📦 Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install dvc[http] mlflow
 
-      - name: ⚙️ Install DVC + extras
-        run: |
-          pip install dvc[s3] dvc[azure] dvc[gs] dvc[gdrive] dagshub mlflow scikit-learn xgboost imbalanced-learn joblib seaborn matplotlib
+    - name: Configure DVC remote with DagsHub credentials
+      run: |
+        dvc remote modify dagshub auth basic
+        dvc remote modify dagshub user "${{ secrets.MLFLOW_TRACKING_USERNAME }}"
+        dvc remote modify dagshub password "${{ secrets.MLFLOW_TRACKING_PASSWORD }}"
 
-      - name: 🧪 Run ML pipeline
-        run: |
-          dvc pull -f   # Only needed if you're using remote storage
-          python main.py
+    - name: Set MLflow environment variables
+      run: |
+        echo "MLFLOW_TRACKING_USERNAME=${{ secrets.MLFLOW_TRACKING_USERNAME }}" >> $GITHUB_ENV
+        echo "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" >> $GITHUB_ENV
 
-      - name: 📤 Commit updated artifacts & dvc.lock
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add artifacts/ dvc.lock
-          git commit -m "🤖 Update model artifacts via CI" || echo "No changes to commit"
-          git push
+    - name: Run ML pipeline
+      run: python main.py
+
+    - name: Push DVC-tracked files to remote (DagsHub)
+      run: dvc push
