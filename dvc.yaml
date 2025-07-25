@@ -1,0 +1,13 @@
+stages:
+  run_pipeline:
+    cmd: python main.py
+    deps:
+      - data/personality_dataset.csv
+      - main.py
+      - data_loader.py
+      - data_preprocessing.py
+      - model_training.py
+      - model_evaluation.py
+    outs:
+      - artifacts/encoders
+      - artifacts/models
