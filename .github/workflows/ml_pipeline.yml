@@ -1,4 +1,4 @@
-name: MLOps CI/CD Pipeline 
+name: MLOps CI/CD Pipeline
 
 on:
   push:
@@ -10,6 +10,10 @@ jobs:
   build-and-run:
     runs-on: ubuntu-latest
 
+    env:
+      MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+      MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+
     steps:
       - name: ⬇️ Checkout Repository
         uses: actions/checkout@v3
@@ -19,25 +23,28 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: 📦 Install Python Dependencies
+      - name: 📦 Install Dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install dvc[http]
 
-      - name: ⚙️ Configure Git
+      - name: ⚙️ Git Configuration
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-      - name: 🔐 Configure DVC Remote (dagshub)
+      - name: 🔐 Configure DVC Remote with Basic Auth (DagsHub)
         run: |
           dvc remote modify dagshub --local auth basic
-          dvc remote modify dagshub --local user "${{ secrets.MLFLOW_TRACKING_USERNAME }}"
-          dvc remote modify dagshub --local password "${{ secrets.MLFLOW_TRACKING_PASSWORD }}"
+          dvc remote modify dagshub --local user "${DVC_USER}"
+          dvc remote modify dagshub --local password "${DVC_PASS}"
+        env:
+          DVC_USER: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+          DVC_PASS: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
 
-      - name: 📥 Pull Data and Artifacts from DVC
+      - name: 📥 Pull Dataset and Artifacts from DVC
         run: dvc pull
 
-      - name: 🚀 Run Main Pipeline
+      - name: 🚀 Run MLOps Pipeline
         run: python main.py
