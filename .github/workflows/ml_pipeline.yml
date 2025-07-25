@@ -10,10 +10,6 @@ jobs:
   build-and-run:
     runs-on: ubuntu-latest
 
-    env:
-      MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
-      MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
-
     steps:
       - name: ⬇️ Checkout Repository
         uses: actions/checkout@v3
@@ -37,8 +33,8 @@ jobs:
       - name: 🔐 Configure DVC Remote (dagshub)
         run: |
           dvc remote modify dagshub --local auth basic
-          dvc remote modify dagshub --local user $MLFLOW_TRACKING_USERNAME
-          dvc remote modify dagshub --local password $MLFLOW_TRACKING_PASSWORD
+          dvc remote modify dagshub --local user "${{ secrets.MLFLOW_TRACKING_USERNAME }}"
+          dvc remote modify dagshub --local password "${{ secrets.MLFLOW_TRACKING_PASSWORD }}"
 
       - name: 📥 Pull Data and Artifacts from DVC
         run: dvc pull
