@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
-      MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+      DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+      DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
 
     steps:
       - name: ⬇️ Checkout Repository
@@ -37,11 +37,8 @@ jobs:
       - name: 🔐 Configure DVC Remote with Basic Auth (DagsHub)
         run: |
           dvc remote modify dagshub --local auth basic
-          dvc remote modify dagshub --local user "${DVC_USER}"
-          dvc remote modify dagshub --local password "${DVC_PASS}"
-        env:
-          DVC_USER: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
-          DVC_PASS: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+          dvc remote modify dagshub --local user "${DAGSHUB_USERNAME}"
+          dvc remote modify dagshub --local password "${DAGSHUB_TOKEN}"
 
       - name: 📥 Pull Dataset and Artifacts from DVC
         run: dvc pull
