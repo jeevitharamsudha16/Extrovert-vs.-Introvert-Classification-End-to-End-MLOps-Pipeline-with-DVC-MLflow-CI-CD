@@ -1,0 +1,40 @@
+schema: '2.0'
+stages:
+  run_pipeline:
+    cmd: python main.py
+    deps:
+    - path: data/personality_dataset.csv
+      hash: md5
+      md5: 5b21f8093f51da0db4ee40fe567ab53a
+      size: 107234
+    - path: data_loader.py
+      hash: md5
+      md5: 9fe15639f58b421863177ab771054917
+      size: 1087
+    - path: data_preprocessing.py
+      hash: md5
+      md5: 134b2ffaec798a9ef6b93451f5863e67
+      size: 1803
+    - path: main.py
+      hash: md5
+      md5: 31e4460d7d9c16b32e0da6ac632f94ff
+      size: 982
+    - path: model_evaluation.py
+      hash: md5
+      md5: 085453c4aabe2d382827585ef517b902
+      size: 5344
+    - path: model_training.py
+      hash: md5
+      md5: c2ed3808c0f1530a4ac04fee848b22a6
+      size: 4396
+    outs:
+    - path: artifacts/encoders
+      hash: md5
+      md5: 7f61a1cc6585ee159ff1cf112c07b020.dir
+      size: 1465
+      nfiles: 3
+    - path: artifacts/models
+      hash: md5
+      md5: 67515a73ff35606fc07ed5fd6d569c30.dir
+      size: 4723553
+      nfiles: 22
