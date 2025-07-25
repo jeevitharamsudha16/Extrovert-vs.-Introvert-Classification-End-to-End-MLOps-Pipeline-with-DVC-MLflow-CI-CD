@@ -1,41 +1,47 @@
-name: MLOps Pipeline CI/CD
+name: MLOps CI/CD Pipeline
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 jobs:
-  run-ml-pipeline:
+  build-and-run:
     runs-on: ubuntu-latest
 
+    env:
+      MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+      MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install dvc[http] mlflow
+      - name: 📦 Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install dvc[http]
 
-    - name: Configure DVC remote with DagsHub credentials
-      run: |
-        dvc remote modify dagshub auth basic
-        dvc remote modify dagshub user "${{ secrets.MLFLOW_TRACKING_USERNAME }}"
-        dvc remote modify dagshub password "${{ secrets.MLFLOW_TRACKING_PASSWORD }}"
+      - name: ⚙️ Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
 
-    - name: Set MLflow environment variables
-      run: |
-        echo "MLFLOW_TRACKING_USERNAME=${{ secrets.MLFLOW_TRACKING_USERNAME }}" >> $GITHUB_ENV
-        echo "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" >> $GITHUB_ENV
+      - name: 🔐 Configure DVC Remote (dagshub)
+        run: |
+          dvc remote modify dagshub --local auth basic
+          dvc remote modify dagshub --local user $MLFLOW_TRACKING_USERNAME
+          dvc remote modify dagshub --local password $MLFLOW_TRACKING_PASSWORD
 
-    - name: Run ML pipeline
-      run: python main.py
+      - name: 📥 Pull Data and Artifacts from DVC
+        run: dvc pull
 
-    - name: Push DVC-tracked files to remote (DagsHub)
-      run: dvc push
+      - name: 🚀 Run Main Pipeline
+        run: python main.py
