@@ -10,13 +10,18 @@ from model_evaluation import evaluate_models
 if __name__ == "__main__":
     start_time = time.time()
 
-    # ✅ Enable remote MLflow tracking on DagsHub
+    # ✅ Set remote MLflow tracking URI for DagsHub
     mlflow.set_tracking_uri("https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow")
-    mlflow.set_experiment("Extrovert-vs-Introvert")
-    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
 
-    # 🐛 Debug: print the active tracking URI
-    print(f"MLflow Tracking URI (from script): {mlflow.get_tracking_uri()}")
+    # ✅ Use your experiment name (must match or pre-create in DagsHub UI)
+    mlflow.set_experiment("Extrovert-vs-Introvert")
+
+    # ✅ Authenticate using your DagsHub token as MLflow username
+    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = ""
+
+    # Debug: confirm tracking URI
+    print(f"📡 MLflow Tracking URI (from script): {mlflow.get_tracking_uri()}")
 
     try:
         # 🚀 Step 1: Load Raw Data
@@ -30,7 +35,7 @@ if __name__ == "__main__":
         # 🤖 Step 3: Train Models
         train_models(X_train, y_train)
 
-        # 🧪 Step 4: Evaluate Models and log to MLflow
+        # 🧪 Step 4: Evaluate Models and log to remote MLflow
         evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=True)
 
         print("\n✅ Pipeline completed successfully!")
