@@ -44,6 +44,9 @@ jobs:
           dvc remote modify dagshub --local auth basic
           dvc remote modify dagshub --local user "${DAGSHUB_USERNAME}"
           dvc remote modify dagshub --local password "${DAGSHUB_TOKEN}"
+          # IMPORTANT: Verify this DVC remote URL from your DagsHub project's "Remote" tab.
+          # It's crucial if your main.py or subsequent scripts perform 'dvc push' operations.
+          dvc remote modify dagshub --local url https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.dvc
 
       - name: 📥 Pull Dataset and Artifacts from DVC
         run: dvc pull
