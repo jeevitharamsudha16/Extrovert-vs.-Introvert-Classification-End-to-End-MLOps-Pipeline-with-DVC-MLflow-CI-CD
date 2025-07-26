@@ -16,6 +16,10 @@ if __name__ == "__main__":
     # ✅ Use your experiment name (must match or pre-create in DagsHub UI)
     mlflow.set_experiment("Personality_Classification")
 
+# ✅ Read credentials from environment variables set by GitHub Actions
+    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("MLFLOW_TRACKING_PASSWORD")
+
     # ✅ Authenticate using your DagsHub token as MLflow username
     #os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
     #os.environ["MLFLOW_TRACKING_PASSWORD"] = ""
