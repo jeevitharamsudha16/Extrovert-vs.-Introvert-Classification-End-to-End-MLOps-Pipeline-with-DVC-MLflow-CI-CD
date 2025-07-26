@@ -24,7 +24,7 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
     mlflow.set_tracking_uri("https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow")
 
     # ✅ Use your experiment name (must match or pre-create in DagsHub UI)
-      mlflow.set_experiment("Personality_Classification")
+    mlflow.set_experiment("Personality_Classification")
 
     # ✅ Authenticate using your DagsHub token as MLflow username
     os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
