@@ -37,7 +37,8 @@ stage_fear_encoder = joblib.load(stage_fear_path)
 drained_encoder = joblib.load(drained_path)
 
 # Streamlit UI
-st.title("🧠 Personality Type Predictor")
+st.title("🧠 Personality Type Predictor: Are You an 🌟 Extrovert or 🔒 Introvert?")
+
 st.markdown("Predict whether someone is likely an **Extrovert** or **Introvert** based on behavioral traits.")
 
 # User input
