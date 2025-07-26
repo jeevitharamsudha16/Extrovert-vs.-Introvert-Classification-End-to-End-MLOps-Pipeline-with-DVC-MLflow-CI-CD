@@ -1,11 +1,21 @@
+import os
+import time
+import mlflow
+
 from data_loader import load_data
 from data_preprocessing import preprocess_data
 from model_training import train_models
 from model_evaluation import evaluate_models
-import time
 
 if __name__ == "__main__":
     start_time = time.time()
+
+    # 🔐 Set env vars for automated token auth (from GitHub Actions Secrets)
+    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_USERNAME")
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("DAGSHUB_TOKEN")
+
+    # 🔗 Set MLflow Tracking URI
+    mlflow.set_tracking_uri("https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow")
 
     try:
         # 🚀 Step 1: Load Raw Data
