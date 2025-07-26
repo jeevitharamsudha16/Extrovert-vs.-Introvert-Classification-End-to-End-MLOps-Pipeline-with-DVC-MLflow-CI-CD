@@ -20,7 +20,16 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
         repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
         mlflow=True
     )
-    mlflow.set_experiment("Personality_Classification")
+        # ✅ Set remote MLflow tracking URI for DagsHub
+    mlflow.set_tracking_uri("https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow")
+
+    # ✅ Use your experiment name (must match or pre-create in DagsHub UI)
+    mlflow.set_experiment("Extrovert-vs-Introvert")
+
+    # ✅ Authenticate using your DagsHub token as MLflow username
+    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = ""
+ 
     print("✅ Connected to MLflow (DagsHub)")
 
     os.makedirs(model_dir, exist_ok=True)
