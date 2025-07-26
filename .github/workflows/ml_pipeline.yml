@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # DagsHub DVC/Git credentials (used by DVC and .netrc)
+      # DagsHub DVC/Git credentials
       DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
       DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-      # MLflow tracking URI (tells MLflow where to connect)
+      # MLflow tracking URI - THIS MUST BE EXACTLY AS SHOWN BELOW
       MLFLOW_TRACKING_URI: https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow
 
     steps:
@@ -30,7 +30,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install dvc[http] mlflow # Ensure mlflow is installed!
+          pip install dvc[http] mlflow
 
       - name: ⚙️ Git Configuration
         run: |
@@ -42,8 +42,6 @@ jobs:
           dvc remote modify dagshub --local auth basic
           dvc remote modify dagshub --local user "${DAGSHUB_USERNAME}"
           dvc remote modify dagshub --local password "${DAGSHUB_TOKEN}"
-          # IMPORTANT: Verify this DVC remote URL from your DagsHub project's "Remote" tab.
-          # This is crucial if your main.py or subsequent scripts perform 'dvc push' operations.
           dvc remote modify dagshub --local url https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.dvc
 
       - name: 📥 Pull Dataset and Artifacts from DVC
@@ -51,12 +49,8 @@ jobs:
 
       - name: 🔐 Authenticate MLflow via .netrc
         run: |
-          # Create or append to .netrc for DagsHub authentication
-          # This makes credentials available to tools like MLflow and Git/DVC
           echo -e "machine dagshub.com\nlogin $DAGSHUB_USERNAME\npassword $DAGSHUB_TOKEN" >> ~/.netrc
-          # Set permissions for .netrc (important for security)
           chmod 600 ~/.netrc
-          echo "::debug::.netrc created/updated" # For debugging in workflow logs
 
       - name: 🚀 Run MLOps Pipeline
         run: python main.py
