@@ -18,7 +18,16 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
         repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
         mlflow=True
     )
+        # ✅ Set remote MLflow tracking URI for DagsHub
+    mlflow.set_tracking_uri("https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow")
+
+    # ✅ Use your experiment name (must match or pre-create in DagsHub UI)
     mlflow.set_experiment("Personality_Classification")
+
+    # ✅ Authenticate using your DagsHub token as MLflow username
+    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = ""
+
     print("✅ Connected to MLflow on DagsHub")
 
     # ✅ Filter model files excluding scalers, best_model, or comparison
