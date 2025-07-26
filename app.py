@@ -4,7 +4,7 @@ import joblib
 import os
 
 # Load the best model
-model_path = "/Users/jeevithads/Desktop/Personality_prediction_mlops_project/artifacts/best_model.pkl"
+model_path = "artifacts/models/best_model.pkl"
 model = joblib.load(model_path)
  
 # Load label encoders
