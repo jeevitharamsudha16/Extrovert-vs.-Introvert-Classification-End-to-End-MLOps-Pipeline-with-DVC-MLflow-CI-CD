@@ -17,7 +17,7 @@ def pull_dvc_artifacts():
 pull_dvc_artifacts()
 
 # Load the best model
-model_path = "artifacts/models/best_model.pkl"
+model_path = "artifacts/models/rf_model.pkl"
 if not os.path.exists(model_path):
     st.error("❌ Model not found even after pulling. Check DVC remote or file path.")
     st.stop()
