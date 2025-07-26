@@ -1,56 +1,38 @@
-name: MLOps CI/CD Pipeline
+# .github/workflows/dvc-pipeline.yml
+name: Run DVC + Push to DagsHub
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
-  build-and-run:
+  run-dvc-pipeline:
     runs-on: ubuntu-latest
 
-    env:
-      # DagsHub DVC/Git credentials
-      DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
-      DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-      # MLflow tracking URI - THIS MUST BE EXACTLY AS SHOWN BELOW
-      MLFLOW_TRACKING_URI: https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow
-
     steps:
-      - name: ⬇️ Checkout Repository
+      - name: 📥 Checkout code
         uses: actions/checkout@v3
 
-      - name: 🐍 Set up Python
+      - name: 🐍 Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.10'
 
       - name: 📦 Install Dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install dvc[http] mlflow
+          pip install "dvc[gs]" dagshub mlflow scikit-learn xgboost
 
-      - name: ⚙️ Git Configuration
+      - name: ⚙️ Run DVC Pipeline
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+          dvc pull
+          dvc repro  # Runs all stages in dvc.yaml
 
-      - name: 🔐 Configure DVC Remote with Access Token (DagsHub)
+      - name: ☁️ Push Artifacts to DagsHub
         run: |
-          dvc remote modify dagshub --local auth basic
-          dvc remote modify dagshub --local user "${DAGSHUB_USERNAME}"
-          dvc remote modify dagshub --local password "${DAGSHUB_TOKEN}"
-          dvc remote modify dagshub --local url https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.dvc
-
-      - name: 📥 Pull Dataset and Artifacts from DVC
-        run: dvc pull
-
-      - name: 🔐 Authenticate MLflow via .netrc
-        run: |
-          echo -e "machine dagshub.com\nlogin $DAGSHUB_USERNAME\npassword $DAGSHUB_TOKEN" >> ~/.netrc
-          chmod 600 ~/.netrc
-
-      - name: 🚀 Run MLOps Pipeline
-        run: python main.py
+          dvc push
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add dvc.lock
+          git commit -m "🤖 Update dvc.lock after pipeline run" || echo "No changes"
+          git push
