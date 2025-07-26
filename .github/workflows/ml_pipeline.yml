@@ -1,9 +1,8 @@
-# .github/workflows/dvc-pipeline.yml
 name: Run DVC + Push to DagsHub
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]  # ✅ Automatically triggers on main branch
 
 jobs:
   run-dvc-pipeline:
@@ -25,14 +24,14 @@ jobs:
 
       - name: ⚙️ Run DVC Pipeline
         env:
-          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}  # 🔐 Secure MLflow access
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}  # ✅ Secure MLflow login
         run: |
-          dvc pull
-          dvc repro  # Runs all stages in dvc.yaml
+          dvc pull                 # ✅ Pull remote data
+          dvc repro                # ✅ Run pipeline (main.py + stages)
 
       - name: ☁️ Push Artifacts to DagsHub
         run: |
-          dvc push
+          dvc push                 # ✅ Push updated artifacts/models
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add dvc.lock
