@@ -17,8 +17,8 @@ if __name__ == "__main__":
     mlflow.set_experiment("Personality_Classification")
 
     # ✅ Authenticate using your DagsHub token as MLflow username
-    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
-    os.environ["MLFLOW_TRACKING_PASSWORD"] = ""
+    #os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
+    #os.environ["MLFLOW_TRACKING_PASSWORD"] = ""
 
     # Debug: confirm tracking URI
     print(f"📡 MLflow Tracking URI (from script): {mlflow.get_tracking_uri()}")
