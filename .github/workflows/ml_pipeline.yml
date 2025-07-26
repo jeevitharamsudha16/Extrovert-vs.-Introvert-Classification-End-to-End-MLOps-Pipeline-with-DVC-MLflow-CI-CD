@@ -24,6 +24,8 @@ jobs:
           pip install "dvc[gs]" dagshub mlflow scikit-learn xgboost
 
       - name: ⚙️ Run DVC Pipeline
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}  # 🔐 Secure MLflow access
         run: |
           dvc pull
           dvc repro  # Runs all stages in dvc.yaml
