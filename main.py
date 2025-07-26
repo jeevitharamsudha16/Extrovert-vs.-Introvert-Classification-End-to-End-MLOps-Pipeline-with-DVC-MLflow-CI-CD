@@ -9,6 +9,8 @@ from model_evaluation import evaluate_models
 
 if __name__ == "__main__":
     start_time = time.time()
+    # Add this line for debugging
+    print(f"MLflow Tracking URI (from script): {mlflow.get_tracking_uri()}")
 
 
     try:
