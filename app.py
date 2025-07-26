@@ -8,7 +8,7 @@ import subprocess
 def pull_dvc_artifacts():
     try:
         subprocess.run(["dvc", "pull"], check=True)
-        st.info("📦 DVC artifacts pulled successfully.")
+       # st.info("📦 DVC artifacts pulled successfully.")
     except subprocess.CalledProcessError:
         st.error("❌ Failed to pull DVC artifacts. Please ensure DVC is installed and configured.")
         st.stop()
