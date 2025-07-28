@@ -2,14 +2,14 @@ name: Run DVC + Push to DagsHub
 
 on:
   push:
-    branches: [ main ]  # ✅ Trigger only on main
+    branches: [ main ]  # ✅ Trigger only on pushes to main branch
 
 jobs:
   run-dvc-pipeline:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout code
+      - name: 📥 Checkout Code
         uses: actions/checkout@v3
 
       - name: 🐍 Setup Python
@@ -17,33 +17,38 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 📦 Install Dependencies
+      - name: 📦 Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install "dvc[gs]" dagshub mlflow scikit-learn xgboost
 
-      - name: 🔐 Authenticate DVC Remote
+      - name: 🔐 Configure DVC Remote (DagsHub)
         run: |
           dvc remote modify dagshub auth basic
           dvc remote modify dagshub user "jeevitharamsudha16"
           dvc remote modify dagshub password "${{ secrets.DAGSHUB_TOKEN }}"
 
+      - name: 🧲 Pull Data & Artifacts from DagsHub
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: dvc pull
+
       - name: ⚙️ Run DVC Pipeline
         env:
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-        run: |
-          dvc pull              # ✅ Pull from DagsHub first
-          dvc repro             # ✅ Run the pipeline (main.py -> train/eval)
+          MLFLOW_TRACKING_USERNAME: jeevitharamsudha16
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+        run: dvc repro
 
-      - name: ☁️ Push Artifacts to DagsHub
+      - name: ☁️ Push Artifacts & Metrics to DagsHub
         run: dvc push
 
-      - name: 🔁 Commit & Push dvc.lock if updated
+      - name: 🔁 Auto Commit & Push Updated DVC Lockfile
         run: |
           git config --global user.name "jeevitharamsudha16"
           git config --global user.email "jeevithads16@gmail.com"
           git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}
           git add dvc.lock
-          git commit -m "🤖 Update dvc.lock after pipeline run" || echo "No changes to commit"
+          git diff --cached --quiet || git commit -m "🤖 Update dvc.lock after pipeline run"
           git push origin HEAD
