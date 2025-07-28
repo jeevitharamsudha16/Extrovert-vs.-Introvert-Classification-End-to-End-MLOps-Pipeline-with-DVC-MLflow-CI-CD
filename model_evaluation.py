@@ -24,6 +24,8 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
     mlflow.set_experiment("Personality_Classification")
     print("✅ Connected to MLflow on DagsHub")
 
+    os.makedirs(model_dir, exist_ok=True)
+
     # ✅ Filter model files
     model_files = [
         f for f in os.listdir(model_dir)
@@ -55,9 +57,9 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
 
         # 📊 Evaluation Metrics
         acc = accuracy_score(y_test, y_pred)
-        prec = precision_score(y_test, y_pred)
-        rec = recall_score(y_test, y_pred)
-        f1 = f1_score(y_test, y_pred)
+        prec = precision_score(y_test, y_pred, average='binary')
+        rec = recall_score(y_test, y_pred, average='binary')
+        f1 = f1_score(y_test, y_pred, average='binary')
 
         print(f"\n📌 {model_name.upper()} Evaluation:")
         print(f"✅ Accuracy: {acc:.4f} | Precision: {prec:.4f} | Recall: {rec:.4f} | F1: {f1:.4f}")
@@ -120,6 +122,7 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
                 if hasattr(model, "predict_proba"):
                     try:
                         y_probs = model.predict_proba(X_test)[:, 1]
+                        plt.figure()
                         RocCurveDisplay.from_predictions(y_test, y_probs)
                         roc_path = os.path.join(model_dir, f"{model_name}_roc_curve.png")
                         plt.savefig(roc_path)
