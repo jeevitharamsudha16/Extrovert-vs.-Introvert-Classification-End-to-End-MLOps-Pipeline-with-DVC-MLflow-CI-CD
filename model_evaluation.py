@@ -4,10 +4,7 @@ import mlflow
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score,
-    confusion_matrix, RocCurveDisplay
-)
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, RocCurveDisplay
 import datetime
 
 def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=True):
@@ -17,20 +14,17 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
     mlflow.set_tracking_uri(
         "https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow"
     )
-
     mlflow.set_experiment("Personality_Classification")
     print("✅ Connected to MLflow on DagsHub")
 
     os.makedirs(model_dir, exist_ok=True)
 
-    model_files = [
-        f for f in os.listdir(model_dir)
-        if f.endswith(".pkl") and all(x not in f for x in ["scaler", "best_model", "comparison"])
-    ]
-    print(f"🔍 Found {len(model_files)} models to evaluate in: {model_dir}")
+    model_files = [f for f in os.listdir(model_dir)
+                   if f.endswith(".pkl") and all(x not in f for x in ["scaler", "best_model", "comparison"])]
+    print(f"🔍 Found {len(model_files)} models to evaluate.")
 
     if not model_files:
-        print("❌ No valid models found to evaluate.")
+        print("❌ No valid models found.")
         return
 
     best_f1 = 0
@@ -44,20 +38,22 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
         model_name = model_file.replace(".pkl", "")
 
         try:
-            loaded_obj = joblib.load(model_path)
-            model = loaded_obj["model"] if isinstance(loaded_obj, dict) and "model" in loaded_obj else loaded_obj
+            model = joblib.load(model_path)
             y_pred = model.predict(X_test)
         except Exception as e:
-            print(f"❌ Skipping {model_name}: Failed to predict. Error: {e}")
+            print(f"❌ Skipping {model_name}: {e}")
             continue
 
         acc = accuracy_score(y_test, y_pred)
         prec = precision_score(y_test, y_pred, average='binary')
         rec = recall_score(y_test, y_pred, average='binary')
         f1 = f1_score(y_test, y_pred, average='binary')
+        print(f"\n📌 {model_name.upper()} | Accuracy: {acc:.4f}, Precision: {prec:.4f}, Recall: {rec:.4f}, F1: {f1:.4f}")
 
-        print(f"\n📌 {model_name.upper()} Evaluation:")
-        print(f"✅ Accuracy: {acc:.4f} | Precision: {prec:.4f} | Recall: {rec:.4f} | F1: {f1:.4f}")
+        if f1 > best_f1:
+            best_f1 = f1
+            best_model = model
+            best_model_name = model_name
 
         prediction_log[model_name] = y_pred
         eval_results.append({
@@ -68,42 +64,15 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
             "f1_score": f1
         })
 
-        is_best = False
-        if f1 > best_f1:
-            best_f1 = f1
-            best_model = model
-            best_model_name = model_name
-            is_best = True
-
         if log_to_mlflow:
             run_name = f"{model_name}_eval_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
             with mlflow.start_run(run_name=run_name):
-                mlflow.set_tags({
-                    "stage": "evaluation",
-                    "model_alias": f"{model_name}_Classifier"
-                })
+                mlflow.set_tags({"stage": "evaluation", "model_alias": model_name})
+                mlflow.log_params({"model_file": model_file})
+                mlflow.log_metrics({"accuracy": acc, "precision": prec, "recall": rec, "f1_score": f1})
+                mlflow.log_artifact(model_path)  # ✅ Manual logging
 
-                mlflow.log_params({
-                    "model_name": model_name,
-                    "model_file": model_file
-                })
-
-                mlflow.log_metrics({
-                    "accuracy": acc,
-                    "precision": prec,
-                    "recall": rec,
-                    "f1_score": f1
-                })
-
-                # ✅ Fixed for DagsHub - use artifact_path instead of name
-                mlflow.sklearn.log_model(
-                    sk_model=model,
-                    artifact_path=f"{model_name}_eval_model"
-                )
-
-                if is_best:
-                    mlflow.set_tag("best_model", "true")
-
+                # Confusion Matrix
                 cm = confusion_matrix(y_test, y_pred)
                 plt.figure(figsize=(6, 5))
                 sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
@@ -115,31 +84,25 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
                 plt.close()
                 mlflow.log_artifact(cm_path)
 
+                # ROC Curve
                 if hasattr(model, "predict_proba"):
                     try:
                         y_probs = model.predict_proba(X_test)[:, 1]
-                        plt.figure()
                         RocCurveDisplay.from_predictions(y_test, y_probs)
                         roc_path = os.path.join(model_dir, f"{model_name}_roc_curve.png")
                         plt.savefig(roc_path)
                         plt.close()
                         mlflow.log_artifact(roc_path)
                     except Exception as e:
-                        print(f"⚠️ Could not generate ROC for {model_name}: {e}")
+                        print(f"⚠️ ROC Curve error for {model_name}: {e}")
 
     if best_model:
         best_path = os.path.join(model_dir, "best_model.pkl")
         joblib.dump(best_model, best_path)
-        print(f"\n🏆 Best model '{best_model_name}' saved at: {best_path}")
+        print(f"\n🏆 Best model: {best_model_name} (F1: {best_f1:.4f}) saved at {best_path}")
 
     if prediction_log:
-        pred_df = pd.DataFrame(prediction_log)
-        comparison_path = os.path.join(model_dir, "prediction_comparison.csv")
-        pred_df.to_csv(comparison_path, index=False)
-        print(f"📄 Saved prediction comparison at: {comparison_path}")
+        pd.DataFrame(prediction_log).to_csv(os.path.join(model_dir, "prediction_comparison.csv"), index=False)
 
     if eval_results:
-        summary_df = pd.DataFrame(eval_results)
-        summary_path = os.path.join(model_dir, "evaluation_summary.csv")
-        summary_df.to_csv(summary_path, index=False)
-        print(f"📊 Saved evaluation summary at: {summary_path}")
+        pd.DataFrame(eval_results).to_csv(os.path.join(model_dir, "evaluation_summary.csv"), index=False)
