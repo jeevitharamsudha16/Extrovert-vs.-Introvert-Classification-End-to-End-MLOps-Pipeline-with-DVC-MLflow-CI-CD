@@ -72,11 +72,12 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
         clf.fit(X_train, y_train)
         best_model = clf.best_estimator_
 
-        # Signature + Input Example
+        # Prepare model input signature
         X_train_float = pd.DataFrame(X_train).astype(float)
         input_example = X_train_float.head()
         signature = infer_signature(X_train_float, best_model.predict(X_train))
 
+        # ✅ Start MLflow run
         run_name = f"{name}_train_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
         with mlflow.start_run(run_name=run_name):
             mlflow.set_tags({
@@ -84,6 +85,7 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
                 "stage": "training",
                 "model_type": name.upper()
             })
+
             mlflow.log_params(clf.best_params_)
             mlflow.log_metric("cv_accuracy", clf.best_score_)
 
@@ -94,19 +96,19 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
                 signature=signature
             )
 
-        # Save model locally
+        # ✅ Save model locally
         model_path = os.path.join(model_dir, f"{name}_model.pkl")
         joblib.dump(best_model, model_path)
         print(f"✅ Saved {name.upper()} model to: {model_path}")
 
-        # Add to summary
+        # 📊 Add result to summary
         summary_results.append({
             "Model": name.upper(),
             "Best Accuracy": round(clf.best_score_, 4),
             "Best Params": clf.best_params_
         })
 
-    # Save model comparison summary
+    # 📈 Save summary CSV
     summary_df = pd.DataFrame(summary_results)
     summary_csv = os.path.join(model_dir, "model_comparison.csv")
     summary_df.to_csv(summary_csv, index=False)
