@@ -4,7 +4,6 @@ import mlflow
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from dagshub import init
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, RocCurveDisplay
@@ -16,14 +15,12 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
     os.environ["MLFLOW_TRACKING_USERNAME"] = "jeevitharamsudha16"
     os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("DAGSHUB_TOKEN")
 
-    # ✅ Connect to MLflow tracking on DagsHub
-    init(
-        repo_owner="jeevitharamsudha16",
-        repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
-        mlflow=True
+    # ✅ Connect to MLflow tracking URI on DagsHub
+    mlflow.set_tracking_uri(
+        "https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow"
     )
 
-    # ✅ Set experiment (should exist on DagsHub)
+    # ✅ Set experiment
     mlflow.set_experiment("Personality_Classification")
     print("✅ Connected to MLflow on DagsHub")
 
