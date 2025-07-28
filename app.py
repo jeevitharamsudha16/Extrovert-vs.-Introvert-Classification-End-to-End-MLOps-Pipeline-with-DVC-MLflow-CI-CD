@@ -17,7 +17,7 @@ def pull_dvc_artifacts():
 pull_dvc_artifacts()
 
 # Load the best model
-model_path = "artifacts/best_model.pkl"
+model_path = "artifacts/models/best_model.pkl"
 model = joblib.load(model_path)
 
 # Load label encoders
