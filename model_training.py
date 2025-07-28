@@ -22,8 +22,7 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
     init(
         repo_owner="jeevitharamsudha16",
         repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
-        mlflow=True,
-        token=os.getenv("DAGSHUB_TOKEN")
+        mlflow=True)
     )
 
     # ✅ Set experiment name
