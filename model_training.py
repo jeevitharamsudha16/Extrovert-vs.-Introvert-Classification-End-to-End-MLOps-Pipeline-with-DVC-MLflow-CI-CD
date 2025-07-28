@@ -2,12 +2,10 @@ import os
 import joblib
 import pandas as pd
 import mlflow
-import mlflow.sklearn
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from xgboost import XGBClassifier
-from mlflow.models.signature import infer_signature
 import datetime
 
 def train_models(X_train, y_train, model_dir="artifacts/models"):
@@ -17,7 +15,6 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
     mlflow.set_tracking_uri(
         "https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow"
     )
-
     mlflow.set_experiment("Personality_Classification")
     print("✅ Connected to MLflow (DagsHub)")
 
@@ -55,36 +52,20 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
             n_jobs=-1,
             random_state=42
         )
-
         clf.fit(X_train, y_train)
         best_model = clf.best_estimator_
 
-        X_train_float = pd.DataFrame(X_train).astype(float)
-        input_example = X_train_float.head()
-        signature = infer_signature(X_train_float, best_model.predict(X_train))
+        model_path = os.path.join(model_dir, f"{name}_model.pkl")
+        joblib.dump(best_model, model_path)
 
         run_name = f"{name}_train_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
         with mlflow.start_run(run_name=run_name):
-            mlflow.set_tags({
-                "developer": "jeevitharamsudha16",
-                "stage": "training",
-                "model_type": name.upper()
-            })
+            mlflow.set_tags({"developer": "jeevitharamsudha16", "stage": "training", "model_type": name.upper()})
             mlflow.log_params(clf.best_params_)
             mlflow.log_metric("cv_accuracy", clf.best_score_)
+            mlflow.log_artifact(model_path)  # ✅ Log manually instead of log_model()
 
-            # ✅ DagsHub compatible MLflow model logging
-            mlflow.sklearn.log_model(
-                sk_model=best_model,
-                artifact_path=f"{name}_model",
-                input_example=input_example,
-                signature=signature
-            )
-
-        model_path = os.path.join(model_dir, f"{name}_model.pkl")
-        joblib.dump(best_model, model_path)
         print(f"✅ Saved {name.upper()} model to: {model_path}")
-
         summary_results.append({
             "Model": name.upper(),
             "Best Accuracy": round(clf.best_score_, 4),
