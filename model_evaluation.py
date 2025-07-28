@@ -11,22 +11,18 @@ from sklearn.metrics import (
 import datetime
 
 def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=True):
-    # ✅ Set environment variables for MLflow authentication
     os.environ["MLFLOW_TRACKING_USERNAME"] = "jeevitharamsudha16"
     os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("DAGSHUB_TOKEN")
 
-    # ✅ Connect to MLflow tracking URI on DagsHub
     mlflow.set_tracking_uri(
         "https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow"
     )
 
-    # ✅ Set experiment
     mlflow.set_experiment("Personality_Classification")
     print("✅ Connected to MLflow on DagsHub")
 
     os.makedirs(model_dir, exist_ok=True)
 
-    # ✅ Filter model files
     model_files = [
         f for f in os.listdir(model_dir)
         if f.endswith(".pkl") and all(x not in f for x in ["scaler", "best_model", "comparison"])
@@ -55,7 +51,6 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
             print(f"❌ Skipping {model_name}: Failed to predict. Error: {e}")
             continue
 
-        # 📊 Evaluation Metrics
         acc = accuracy_score(y_test, y_pred)
         prec = precision_score(y_test, y_pred, average='binary')
         rec = recall_score(y_test, y_pred, average='binary')
@@ -73,7 +68,6 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
             "f1_score": f1
         })
 
-        # 🏆 Track best model
         is_best = False
         if f1 > best_f1:
             best_f1 = f1
@@ -101,12 +95,11 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
                     "f1_score": f1
                 })
 
-                mlflow.sklearn.log_model(model, artifact_path="model")
+                mlflow.sklearn.log_model(model, name=f"{model_name}_eval_model")
 
                 if is_best:
                     mlflow.set_tag("best_model", "true")
 
-                # 📊 Confusion Matrix
                 cm = confusion_matrix(y_test, y_pred)
                 plt.figure(figsize=(6, 5))
                 sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
@@ -118,7 +111,6 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
                 plt.close()
                 mlflow.log_artifact(cm_path)
 
-                # 📈 ROC Curve
                 if hasattr(model, "predict_proba"):
                     try:
                         y_probs = model.predict_proba(X_test)[:, 1]
@@ -131,20 +123,17 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
                     except Exception as e:
                         print(f"⚠️ Could not generate ROC for {model_name}: {e}")
 
-    # ✅ Save best model
     if best_model:
         best_path = os.path.join(model_dir, "best_model.pkl")
         joblib.dump(best_model, best_path)
         print(f"\n🏆 Best model '{best_model_name}' saved at: {best_path}")
 
-    # 📄 Save predictions
     if prediction_log:
         pred_df = pd.DataFrame(prediction_log)
         comparison_path = os.path.join(model_dir, "prediction_comparison.csv")
         pred_df.to_csv(comparison_path, index=False)
         print(f"📄 Saved prediction comparison at: {comparison_path}")
 
-    # 📈 Save evaluation summary
     if eval_results:
         summary_df = pd.DataFrame(eval_results)
         summary_path = os.path.join(model_dir, "evaluation_summary.csv")
