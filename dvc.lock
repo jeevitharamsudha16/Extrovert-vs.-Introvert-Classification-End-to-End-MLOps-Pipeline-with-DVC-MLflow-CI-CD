@@ -17,16 +17,16 @@ stages:
       size: 1803
     - path: main.py
       hash: md5
-      md5: 31e4460d7d9c16b32e0da6ac632f94ff
-      size: 982
+      md5: ec5a8e51a75d0659b0be27d0f6ab0dff
+      size: 1499
     - path: model_evaluation.py
       hash: md5
-      md5: 085453c4aabe2d382827585ef517b902
-      size: 5344
+      md5: cb0f6b08aa77156f8d344a7a35cf88f3
+      size: 4388
     - path: model_training.py
       hash: md5
-      md5: c2ed3808c0f1530a4ac04fee848b22a6
-      size: 4396
+      md5: b37cd38607a32e2eae8322e76ab69d31
+      size: 3115
     outs:
     - path: artifacts/encoders
       hash: md5
@@ -35,6 +35,6 @@ stages:
       nfiles: 3
     - path: artifacts/models
       hash: md5
-      md5: 67515a73ff35606fc07ed5fd6d569c30.dir
-      size: 4723553
-      nfiles: 22
+      md5: f0893e97bdd7c9199bd15773509194da.dir
+      size: 3874210
+      nfiles: 16
