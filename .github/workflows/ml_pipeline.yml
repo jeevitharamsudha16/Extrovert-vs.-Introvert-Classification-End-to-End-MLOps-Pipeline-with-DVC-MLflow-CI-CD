@@ -37,10 +37,13 @@ jobs:
           dvc repro             # ✅ Run the pipeline (main.py -> train/eval)
 
       - name: ☁️ Push Artifacts to DagsHub
+        run: dvc push
+
+      - name: 🔁 Commit & Push dvc.lock if updated
         run: |
-          dvc push              # ✅ Push updated models, metrics, etc.
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "jeevitharamsudha16"
+          git config --global user.email "jeevithads16@gmail.com"
+          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}
           git add dvc.lock
           git commit -m "🤖 Update dvc.lock after pipeline run" || echo "No changes to commit"
-          git push
+          git push origin HEAD
