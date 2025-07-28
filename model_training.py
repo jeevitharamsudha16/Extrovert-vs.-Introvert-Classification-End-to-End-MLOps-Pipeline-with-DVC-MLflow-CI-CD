@@ -73,9 +73,10 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
             mlflow.log_params(clf.best_params_)
             mlflow.log_metric("cv_accuracy", clf.best_score_)
 
+            # ✅ DagsHub compatible MLflow model logging
             mlflow.sklearn.log_model(
                 sk_model=best_model,
-                artifact_path=f"{name}_model",   # ✅ Corrected here
+                artifact_path=f"{name}_model",
                 input_example=input_example,
                 signature=signature
             )
