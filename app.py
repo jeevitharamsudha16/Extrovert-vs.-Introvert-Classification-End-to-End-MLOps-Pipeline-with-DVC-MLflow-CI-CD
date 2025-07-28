@@ -17,11 +17,7 @@ def pull_dvc_artifacts():
 pull_dvc_artifacts()
 
 # Load the best model
-model_path = "artifacts/models/best_model.pkl"
-if not os.path.exists(model_path):
-    st.error("❌ Model not found even after pulling. Check DVC remote or file path.")
-    st.stop()
-
+model_path = "/Users/jeevithads/Desktop/Personality_prediction_mlops_project/artifacts/best_model.pkl"
 model = joblib.load(model_path)
 
 # Load label encoders
