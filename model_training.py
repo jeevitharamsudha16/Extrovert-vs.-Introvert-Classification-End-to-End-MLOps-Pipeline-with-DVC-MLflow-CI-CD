@@ -3,7 +3,6 @@ import joblib
 import pandas as pd
 import mlflow
 import mlflow.sklearn
-from dagshub import init
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
@@ -14,19 +13,18 @@ from mlflow.models.signature import infer_signature
 import datetime
 
 def train_models(X_train, y_train, model_dir="artifacts/models"):
-    # ✅ MLflow authentication for DagsHub
-    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
-    os.environ["MLFLOW_TRACKING_PASSWORD"] = ""
+    # ✅ Set MLflow authentication using DagsHub credentials
+    os.environ["MLFLOW_TRACKING_USERNAME"] = "jeevitharamsudha16"
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("DAGSHUB_TOKEN")
 
-    # ✅ Initialize DagsHub MLflow tracking
-    init(
-        repo_owner="jeevitharamsudha16",
-        repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
-        mlflow=True
+    # ✅ Connect to MLflow tracking URI on DagsHub
+    mlflow.set_tracking_uri(
+        "https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow"
     )
-    mlflow.set_tracking_uri("https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow")
+
+    # ✅ Set experiment name
     mlflow.set_experiment("Personality_Classification")
-    print("✅ Connected to MLflow on DagsHub")
+    print("✅ Connected to MLflow (DagsHub)")
 
     os.makedirs(model_dir, exist_ok=True)
 
@@ -74,6 +72,7 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
         clf.fit(X_train, y_train)
         best_model = clf.best_estimator_
 
+        # Signature + Input Example
         X_train_float = pd.DataFrame(X_train).astype(float)
         input_example = X_train_float.head()
         signature = infer_signature(X_train_float, best_model.predict(X_train))
@@ -87,6 +86,7 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
             })
             mlflow.log_params(clf.best_params_)
             mlflow.log_metric("cv_accuracy", clf.best_score_)
+
             mlflow.sklearn.log_model(
                 sk_model=best_model,
                 artifact_path="model",
@@ -94,16 +94,19 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
                 signature=signature
             )
 
+        # Save model locally
         model_path = os.path.join(model_dir, f"{name}_model.pkl")
         joblib.dump(best_model, model_path)
         print(f"✅ Saved {name.upper()} model to: {model_path}")
 
+        # Add to summary
         summary_results.append({
             "Model": name.upper(),
             "Best Accuracy": round(clf.best_score_, 4),
             "Best Params": clf.best_params_
         })
 
+    # Save model comparison summary
     summary_df = pd.DataFrame(summary_results)
     summary_csv = os.path.join(model_dir, "model_comparison.csv")
     summary_df.to_csv(summary_csv, index=False)
