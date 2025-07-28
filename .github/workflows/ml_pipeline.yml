@@ -1,4 +1,4 @@
-name: Run DVC + Push to DagsHub
+name: Run DVC + Push to DagsHub 
 
 on:
   push:
