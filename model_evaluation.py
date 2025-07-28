@@ -95,7 +95,11 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
                     "f1_score": f1
                 })
 
-                mlflow.sklearn.log_model(model, name=f"{model_name}_eval_model")
+                # ✅ Fixed for DagsHub - use artifact_path instead of name
+                mlflow.sklearn.log_model(
+                    sk_model=model,
+                    artifact_path=f"{model_name}_eval_model"
+                )
 
                 if is_best:
                     mlflow.set_tag("best_model", "true")
