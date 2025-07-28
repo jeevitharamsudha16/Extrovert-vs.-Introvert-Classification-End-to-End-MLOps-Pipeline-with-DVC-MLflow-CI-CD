@@ -75,7 +75,7 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
 
             mlflow.sklearn.log_model(
                 sk_model=best_model,
-                name=f"{name}_model",
+                artifact_path=f"{name}_model",   # ✅ Corrected here
                 input_example=input_example,
                 signature=signature
             )
