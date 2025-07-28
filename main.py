@@ -18,8 +18,7 @@ if __name__ == "__main__":
     init(
         repo_owner="jeevitharamsudha16",
         repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
-        mlflow=True,
-        token=os.getenv("DAGSHUB_TOKEN")
+        mlflow=True
     )
 
     print(f"📡 MLflow Tracking URI (dagshub): {mlflow.get_tracking_uri()}")
