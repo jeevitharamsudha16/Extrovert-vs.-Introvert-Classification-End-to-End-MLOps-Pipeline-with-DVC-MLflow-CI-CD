@@ -1,5 +1,7 @@
-from dagshub import init
+import os
 import time
+import mlflow
+from dagshub import init
 from data_loader import load_data
 from data_preprocessing import preprocess_data
 from model_training import train_models
@@ -8,11 +10,16 @@ from model_evaluation import evaluate_models
 if __name__ == "__main__":
     start_time = time.time()
 
-    # ✅ Initialize DagsHub connection with MLflow tracking
+    # ✅ Set MLflow credentials for DagsHub
+    os.environ["MLFLOW_TRACKING_USERNAME"] = "jeevitharamsudha16"
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("DAGSHUB_TOKEN")
+
+    # ✅ Initialize DagsHub + MLflow tracking
     init(
         repo_owner="jeevitharamsudha16",
         repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
-        mlflow=True
+        mlflow=True,
+        token=os.getenv("DAGSHUB_TOKEN")
     )
 
     print(f"📡 MLflow Tracking URI (dagshub): {mlflow.get_tracking_uri()}")
@@ -33,3 +40,4 @@ if __name__ == "__main__":
         print(f"\n❌ Pipeline failed due to: {e}")
 
     print(f"\n⏱️ Total time taken: {time.time() - start_time:.2f} seconds")
+
