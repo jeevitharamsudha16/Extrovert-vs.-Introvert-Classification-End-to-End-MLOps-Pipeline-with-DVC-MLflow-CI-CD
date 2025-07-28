@@ -2,7 +2,7 @@ name: Run DVC + Push to DagsHub
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]  # ✅ Trigger only on main
 
 jobs:
   run-dvc-pipeline:
@@ -23,24 +23,24 @@ jobs:
           pip install -r requirements.txt
           pip install "dvc[gs]" dagshub mlflow scikit-learn xgboost
 
-      - name: ⚙️ Run DVC Pipeline
-        env:
-          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-        run: |
-          dvc pull
-          dvc repro
-
       - name: 🔐 Authenticate DVC Remote
         run: |
           dvc remote modify dagshub auth basic
           dvc remote modify dagshub user "jeevitharamsudha16"
           dvc remote modify dagshub password "${{ secrets.DAGSHUB_TOKEN }}"
 
+      - name: ⚙️ Run DVC Pipeline
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          dvc pull              # ✅ Pull from DagsHub first
+          dvc repro             # ✅ Run the pipeline (main.py -> train/eval)
+
       - name: ☁️ Push Artifacts to DagsHub
         run: |
-          dvc push
+          dvc push              # ✅ Push updated models, metrics, etc.
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add dvc.lock
-          git commit -m "🤖 Update dvc.lock after pipeline run" || echo "No changes"
+          git commit -m "🤖 Update dvc.lock after pipeline run" || echo "No changes to commit"
           git push
