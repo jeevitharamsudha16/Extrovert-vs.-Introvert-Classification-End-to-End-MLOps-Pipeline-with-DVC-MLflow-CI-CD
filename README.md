@@ -19,7 +19,7 @@ This project is an end-to-end Machine Learning workflow that classifies individu
 - 🌐 Interactive personality classifier deployed using Streamlit
 
 🎯 **Streamlit app:**  
-🌐 [🧪 Streamlit Personality Classifier](https://3ddosdpzvpvejkahcebxuv.streamlit.app/)
+🌐 [🧪 Streamlit Personality Classifier](https://opxbayvkxbfpzepdf4sdrm.streamlit.app/)
 ![Alt Text](Snip20250728_41.png)
 
 📊 **Experiment Tracking:**  
@@ -125,6 +125,7 @@ On every **push** or **pull request**, the following actions are triggered:
 ---
 
 ## 🌐 Streamlit App Deployment
+https://opxbayvkxbfpzepdf4sdrm.streamlit.app/ 
 
 To run the app locally:
 
