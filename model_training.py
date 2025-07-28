@@ -14,69 +14,46 @@ from mlflow.models.signature import infer_signature
 import datetime
 
 def train_models(X_train, y_train, model_dir="artifacts/models"):
-    # ✅ Set MLflow authentication using DagsHub credentials
-    os.environ["MLFLOW_TRACKING_USERNAME"] = "jeevitharamsudha16"
-    os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("DAGSHUB_TOKEN")
+    # ✅ MLflow authentication for DagsHub
+    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = ""
 
-    # ✅ Connect to MLflow tracking on DagsHub
+    # ✅ Initialize DagsHub MLflow tracking
     init(
         repo_owner="jeevitharamsudha16",
         repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
-        mlflow=True)
-
-
-    # ✅ Set experiment name
+        mlflow=True
+    )
+    mlflow.set_tracking_uri("https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow")
     mlflow.set_experiment("Personality_Classification")
-    print("✅ Connected to MLflow (DagsHub)")
+    print("✅ Connected to MLflow on DagsHub")
 
     os.makedirs(model_dir, exist_ok=True)
 
     models = {
         'logreg': {
             'model': LogisticRegression(solver='liblinear'),
-            'params': {
-                'C': [0.1, 1.0, 10.0],
-                'penalty': ['l1', 'l2']
-            }
+            'params': {'C': [0.1, 1.0, 10.0], 'penalty': ['l1', 'l2']}
         },
         'knn': {
             'model': KNeighborsClassifier(),
-            'params': {
-                'n_neighbors': [3, 5, 7, 9],
-                'weights': ['uniform', 'distance'],
-                'p': [1, 2]
-            }
+            'params': {'n_neighbors': [3, 5, 7, 9], 'weights': ['uniform', 'distance'], 'p': [1, 2]}
         },
         'dt': {
             'model': DecisionTreeClassifier(random_state=42),
-            'params': {
-                'max_depth': [None, 5, 10, 20],
-                'min_samples_split': [2, 5, 10]
-            }
+            'params': {'max_depth': [None, 5, 10, 20], 'min_samples_split': [2, 5, 10]}
         },
         'rf': {
             'model': RandomForestClassifier(random_state=42),
-            'params': {
-                'n_estimators': [50, 100, 200],
-                'max_depth': [None, 10, 20],
-                'min_samples_split': [2, 5]
-            }
+            'params': {'n_estimators': [50, 100, 200], 'max_depth': [None, 10, 20], 'min_samples_split': [2, 5]}
         },
         'gb': {
             'model': GradientBoostingClassifier(random_state=42),
-            'params': {
-                'n_estimators': [50, 100, 150],
-                'learning_rate': [0.05, 0.1],
-                'max_depth': [3, 5]
-            }
+            'params': {'n_estimators': [50, 100, 150], 'learning_rate': [0.05, 0.1], 'max_depth': [3, 5]}
         },
         'xgb': {
             'model': XGBClassifier(random_state=42, eval_metric='logloss'),
-            'params': {
-                'n_estimators': [50, 100],
-                'learning_rate': [0.05, 0.1],
-                'max_depth': [3, 5, 7]
-            }
+            'params': {'n_estimators': [50, 100], 'learning_rate': [0.05, 0.1], 'max_depth': [3, 5, 7]}
         }
     }
 
@@ -97,7 +74,6 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
         clf.fit(X_train, y_train)
         best_model = clf.best_estimator_
 
-        # Signature + Input Example
         X_train_float = pd.DataFrame(X_train).astype(float)
         input_example = X_train_float.head()
         signature = infer_signature(X_train_float, best_model.predict(X_train))
@@ -111,7 +87,6 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
             })
             mlflow.log_params(clf.best_params_)
             mlflow.log_metric("cv_accuracy", clf.best_score_)
-
             mlflow.sklearn.log_model(
                 sk_model=best_model,
                 artifact_path="model",
@@ -119,19 +94,16 @@ def train_models(X_train, y_train, model_dir="artifacts/models"):
                 signature=signature
             )
 
-        # Save model locally
         model_path = os.path.join(model_dir, f"{name}_model.pkl")
         joblib.dump(best_model, model_path)
         print(f"✅ Saved {name.upper()} model to: {model_path}")
 
-        # Add to summary
         summary_results.append({
             "Model": name.upper(),
             "Best Accuracy": round(clf.best_score_, 4),
             "Best Params": clf.best_params_
         })
 
-    # Save model comparison summary
     summary_df = pd.DataFrame(summary_results)
     summary_csv = os.path.join(model_dir, "model_comparison.csv")
     summary_df.to_csv(summary_csv, index=False)
