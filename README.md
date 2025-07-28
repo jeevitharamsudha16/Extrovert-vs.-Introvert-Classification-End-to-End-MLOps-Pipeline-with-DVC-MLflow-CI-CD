@@ -25,6 +25,10 @@ This project is an end-to-end Machine Learning workflow that classifies individu
 📊 **Experiment Tracking:**  
 📁 [🔍 MLflow Experiments on DagsHub](https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow/#/experiments/0?searchFilter=&orderByKey=attributes.start_time&orderByAsc=false&startTime=ALL&lifecycleFilter=Active&modelVersionFilter=All+Runs&datasetsFilter=W10%3D&compareRunsMode=TABLE)
 
+**Dagshub pipeline**
+[Dags hub pipeline](https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD)
+![Alt Text](Snip20250728_42.png)
+
 📂 **Source Code Repository:**  
 💻 [📦 GitHub Repo](https://github.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD)
 
