@@ -34,7 +34,7 @@ jobs:
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: dvc pull
 
-      - name: ⚙️ Run DVC Pipeline
+      - name: ⚙️ Run DVC Pipeline (MLflow to DagsHub)
         env:
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
           MLFLOW_TRACKING_USERNAME: jeevitharamsudha16
@@ -45,10 +45,12 @@ jobs:
         run: dvc push
 
       - name: 🔁 Auto Commit & Push Updated DVC Lockfile
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name "jeevitharamsudha16"
-          git config --global user.email "jeevithads16@gmail.com"
-          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add dvc.lock
           git diff --cached --quiet || git commit -m "🤖 Update dvc.lock after pipeline run"
           git push origin HEAD
