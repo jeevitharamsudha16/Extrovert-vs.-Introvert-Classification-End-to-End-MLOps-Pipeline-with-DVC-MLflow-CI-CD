@@ -12,25 +12,23 @@ from sklearn.metrics import (
 import datetime
 
 def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=True):
-    # ✅ Connect to DagsHub MLflow
+    # ✅ Set environment variables for MLflow authentication
+    os.environ["MLFLOW_TRACKING_USERNAME"] = "jeevitharamsudha16"
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("DAGSHUB_TOKEN")
+
+    # ✅ Connect to MLflow tracking on DagsHub
     init(
         repo_owner="jeevitharamsudha16",
         repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
-        mlflow=True
+        mlflow=True,
+        token=os.getenv("DAGSHUB_TOKEN")
     )
-        # ✅ Set remote MLflow tracking URI for DagsHub
-    mlflow.set_tracking_uri("https://dagshub.com/jeevitharamsudha16/Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD.mlflow")
 
-    # ✅ Use your experiment name (must match or pre-create in DagsHub UI)
+    # ✅ Set experiment (should exist on DagsHub)
     mlflow.set_experiment("Personality_Classification")
-
-    # ✅ Authenticate using your DagsHub token as MLflow username
-    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TOKEN")
-    os.environ["MLFLOW_TRACKING_PASSWORD"] = ""
-
     print("✅ Connected to MLflow on DagsHub")
 
-    # ✅ Filter model files excluding scalers, best_model, or comparison
+    # ✅ Filter model files
     model_files = [
         f for f in os.listdir(model_dir)
         if f.endswith(".pkl") and all(x not in f for x in ["scaler", "best_model", "comparison"])
