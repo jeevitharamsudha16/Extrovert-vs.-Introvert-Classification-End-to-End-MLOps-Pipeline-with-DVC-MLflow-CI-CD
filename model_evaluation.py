@@ -20,8 +20,7 @@ def evaluate_models(X_test, y_test, model_dir="artifacts/models", log_to_mlflow=
     init(
         repo_owner="jeevitharamsudha16",
         repo_name="Extrovert-vs.-Introvert-Classification-End-to-End-MLOps-Pipeline-with-DVC-MLflow-CI-CD",
-        mlflow=True,
-        token=os.getenv("DAGSHUB_TOKEN")
+        mlflow=True
     )
 
     # ✅ Set experiment (should exist on DagsHub)
